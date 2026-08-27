@@ -12,7 +12,7 @@ class SocketManager {
 
   connect(serverUrl) {
     const customUrl = localStorage.getItem('duo_server_url');
-    const targetUrl = serverUrl || customUrl || import.meta.env.VITE_SOCKET_SERVER_URL || 'http://localhost:3001';
+    const targetUrl = serverUrl || customUrl || import.meta.env.VITE_SOCKET_SERVER_URL || 'https://heavy-foxes-exist.loca.lt';
     
     try {
       this.socket = io(targetUrl, {

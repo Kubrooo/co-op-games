@@ -108,7 +108,7 @@ export function Home() {
           </label>
           <input
             type="text"
-            placeholder="Contoh: https://sweet-cat-42.loca.lt"
+            placeholder="Default: https://heavy-foxes-exist.loca.lt"
             defaultValue={localStorage.getItem('duo_server_url') || ''}
             onChange={(e) => {
               const url = e.target.value.trim();
