@@ -10,9 +10,11 @@ class SocketManager {
     this.playerNum = 1;
   }
 
-  connect(serverUrl = (import.meta.env.VITE_SOCKET_SERVER_URL || 'http://localhost:3001')) {
+  connect(serverUrl) {
+    const customUrl = localStorage.getItem('duo_server_url');
+    const targetUrl = serverUrl || customUrl || import.meta.env.VITE_SOCKET_SERVER_URL || 'http://localhost:3001';
     try {
-      this.socket = io(serverUrl, {
+      this.socket = io(targetUrl, {
         transports: ['websocket', 'polling'],
         timeout: 3000,
         autoConnect: true
