@@ -13,16 +13,27 @@ class SocketManager {
   connect(serverUrl) {
     const customUrl = localStorage.getItem('duo_server_url');
     const targetUrl = serverUrl || customUrl || import.meta.env.VITE_SOCKET_SERVER_URL || 'http://localhost:3001';
+    
     try {
       this.socket = io(targetUrl, {
         transports: ['websocket', 'polling'],
-        timeout: 3000,
-        autoConnect: true
+        timeout: 5000,
+        autoConnect: true,
+        extraHeaders: {
+          "bypass-tunnel-reminder": "true"
+        }
       });
 
-      this.socket.on('connect_error', () => {
-        console.log('[SocketManager] Backend unavailable, switching to Local Dual-Tab BroadcastChannel mode.');
+      this.socket.on('connect', () => {
+        console.log('[SocketManager] Connected to Socket Server:', targetUrl);
+        this.useMock = false;
+        this.emitToListeners('connection_status', { connected: true, url: targetUrl });
+      });
+
+      this.socket.on('connect_error', (err) => {
+        console.log('[SocketManager] Backend connection error, enabling fallback local mode:', err.message);
         this.enableMockMode();
+        this.emitToListeners('connection_status', { connected: false, url: targetUrl });
       });
 
       // Pass socket events to registered listeners
@@ -79,7 +90,7 @@ class SocketManager {
 
   // Socket Actions
   createRoom(playerName, avatar) {
-    if (!this.useMock && this.socket && this.socket.connected) {
+    if (this.socket && !this.useMock) {
       this.socket.emit('create_room', { playerName, avatar });
     } else {
       const mockCode = Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -115,7 +126,7 @@ class SocketManager {
 
   joinRoom(roomId, playerName, avatar) {
     const cleanCode = (roomId || '').trim().toUpperCase();
-    if (!this.useMock && this.socket && this.socket.connected) {
+    if (this.socket && !this.useMock) {
       this.socket.emit('join_room', { roomId: cleanCode, playerName, avatar });
     } else {
       const stored = localStorage.getItem(`duo_room_${cleanCode}`);
@@ -159,7 +170,7 @@ class SocketManager {
   }
 
   toggleReady(roomId) {
-    if (!this.useMock && this.socket && this.socket.connected) {
+    if (this.socket && !this.useMock) {
       this.socket.emit('toggle_ready', { roomId });
     } else {
       const stored = localStorage.getItem(`duo_room_${roomId}`);
@@ -178,7 +189,7 @@ class SocketManager {
   }
 
   startGame(roomId) {
-    if (!this.useMock && this.socket && this.socket.connected) {
+    if (this.socket && !this.useMock) {
       this.socket.emit('start_game', { roomId });
     } else {
       const stored = localStorage.getItem(`duo_room_${roomId}`);
@@ -196,7 +207,7 @@ class SocketManager {
   }
 
   submitAction(roomId, actionType, payload) {
-    if (!this.useMock && this.socket && this.socket.connected) {
+    if (this.socket && !this.useMock) {
       this.socket.emit('submit_action', { roomId, actionType, payload });
     } else {
       const data = {
@@ -214,7 +225,7 @@ class SocketManager {
   }
 
   updateScores(roomId, p1Points, p2Points, gameTitle, stats) {
-    if (!this.useMock && this.socket && this.socket.connected) {
+    if (this.socket && !this.useMock) {
       this.socket.emit('update_scores', { roomId, p1Points, p2Points, gameTitle, stats });
     } else {
       const stored = localStorage.getItem(`duo_room_${roomId}`);
@@ -235,7 +246,7 @@ class SocketManager {
   }
 
   nextRound(roomId) {
-    if (!this.useMock && this.socket && this.socket.connected) {
+    if (this.socket && !this.useMock) {
       this.socket.emit('next_round', { roomId });
     } else {
       const stored = localStorage.getItem(`duo_room_${roomId}`);
@@ -259,7 +270,7 @@ class SocketManager {
   }
 
   restartGame(roomId) {
-    if (!this.useMock && this.socket && this.socket.connected) {
+    if (this.socket && !this.useMock) {
       this.socket.emit('restart_game', { roomId });
     } else {
       const stored = localStorage.getItem(`duo_room_${roomId}`);

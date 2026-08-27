@@ -100,6 +100,24 @@ export function Home() {
           onSelect={setAvatar}
           unlockedAvatars={userData?.unlockedAvatars}
         />
+
+        {/* Optional Server URL Setting */}
+        <div className="pt-2 border-t border-white/10">
+          <label className="block text-[11px] font-bold text-white/50 uppercase tracking-wider mb-1">
+            Server Backend URL (Opsional — untuk Localtunnel / Online Server):
+          </label>
+          <input
+            type="text"
+            placeholder="Contoh: https://sweet-cat-42.loca.lt"
+            defaultValue={localStorage.getItem('duo_server_url') || ''}
+            onChange={(e) => {
+              const url = e.target.value.trim();
+              if (url) localStorage.setItem('duo_server_url', url);
+              else localStorage.removeItem('duo_server_url');
+            }}
+            className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white placeholder-white/20 text-xs font-mono transition-all"
+          />
+        </div>
       </div>
 
       {/* Action Buttons */}
